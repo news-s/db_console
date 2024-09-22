@@ -2,8 +2,7 @@
 #Use to modify records in the database.
 #Note: Use it when app is not running.
 
-
-import sqlite3, colorama
+import sqlite3, colorama, os # type: ignore
 
 def connect_to_database(db_name):
     try:
@@ -14,7 +13,7 @@ def connect_to_database(db_name):
         print(f"Error connecting to database: {e}")
         return None
 
-def execute_sql_command(conn, command):
+def execute_sql_command(conn, command: str):
     try:
         cursor = conn.cursor()
         cursor.execute(command)
@@ -59,25 +58,62 @@ def show_table_info(conn, table_name):
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
 
-def main():
-    db_name = input("Enter the name of the database file (e.g., 'example.db'): ")
+def help():
+    print("Hello, happy to see you using this bs code")
+    print("If you need help feel free to see homepage of this progject: https://github.com/news-s/db_console")
+    print("Or dm me on Discord: news.exe")
+    print("    exit                  - just what it says, exits program")
+    print("    show tables           - shows all tables in the database")
+    print("    describe <table_name> - prints everything about all cilumns in the table")
+    print("Every thing else is like in normal sqlite3.")
+
+def find_file(name: str) -> bool:
+    for f in os.listdir():
+        if f == name: return True
+    return False
+
+def run_commands(command: str, conn, table_name: str) -> bool:
+    command = command.lower().split()[0]
+    match command:
+        case 'show':        show_tables(conn)
+        case 'describe':    show_table_info(conn, table_name)
+        case 'help':        help()
+        case 'exit':        return 0
+        case _:             execute_sql_command(conn, command)
+            
+
+def main(db_name: str) -> None:
     conn = connect_to_database(db_name)
 
     if conn:
         while True:
-            command = input(colorama.Fore.GREEN + "Enter an SQL command (or 'show tables', 'describe <table>', 'exit' to quit): " + colorama.Fore.WHITE)
-            if command.lower() == 'exit':
+            command = input(colorama.Fore.GREEN + "Enter an SQL command: " + colorama.Fore.WHITE)
+            if len(command.split()) == 0:
+                name = command.split()[1]
+            else: name = None
+            if run_commands(command, conn, name) == 0:
                 break
-            elif command.lower() == 'show tables':
-                show_tables(conn)
-            elif command.lower().startswith('describe '):
-                table_name = command.split()[1]
-                show_table_info(conn, table_name)
-            else:
-                execute_sql_command(conn, command)
 
         conn.close()
         print("Connection closed.")
 
+def start():
+    db_name = input("Enter the name of the sqlite3 database file: ")
+    db_name = db_name + ".sqlite3"
+    if find_file(db_name):
+        print("Connecting to database")
+        main(db_name)
+    else:
+        print(f"No file with name '{db_name}'. Do you want to create y/n")
+        response = input()
+        if response.lower() == 'y':
+            main(db_name)
+        elif response.lowercase() == 'n':
+            print("oki")
+            return 0
+        else:
+            print("huh? lets try again")
+            start()
+
 if __name__ == "__main__":
-    main()
+    start()
