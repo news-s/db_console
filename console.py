@@ -62,10 +62,10 @@ def help():
     print("Hello, happy to see you using this bs code")
     print("If you need help feel free to see homepage of this progject: https://github.com/news-s/db_console")
     print("Or dm me on Discord: news.exe")
-    print("    exit                  - just what it says, exits program")
-    print("    show tables           - shows all tables in the database")
-    print("    describe <table_name> - prints everything about all cilumns in the table")
-    print("Every thing else is like in normal sqlite3.")
+    print("    exit                  - just what it says, exits program. Easer than in vim.")
+    print("    show tables           - shows all tables in the database.")
+    print("    describe <table_name> - prints everything about all cilumns in the table.")
+    print("Everything else is like in normal sqlite3.")
 
 def find_file(name: str) -> bool:
     for f in os.listdir():
@@ -74,12 +74,12 @@ def find_file(name: str) -> bool:
 
 def run_commands(command: str, conn, table_name: str) -> bool:
     command = command.lower().split()[0]
-    match command:
-        case 'show':        show_tables(conn)
-        case 'describe':    show_table_info(conn, table_name)
-        case 'help':        help()
-        case 'exit':        return 0
-        case _:             execute_sql_command(conn, command)
+    # I would do that using match-case, but I don't have installed newest version :(
+    if command == 'exit': return 0
+    elif command == 'show':        show_tables(conn)
+    elif command == 'describe':    show_table_info(conn, table_name)
+    elif command == 'help':        help()
+    else:               execute_sql_command(conn, command)
             
 
 def main(db_name: str) -> None:
@@ -108,7 +108,7 @@ def start():
         response = input()
         if response.lower() == 'y':
             main(db_name)
-        elif response.lowercase() == 'n':
+        elif response.lower() == 'n':
             print("oki")
             return 0
         else:
