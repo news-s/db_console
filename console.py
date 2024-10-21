@@ -72,19 +72,27 @@ def find_file(name: str) -> bool:
         if f == name: return True
     return False
 
-def run_commands(command: str, conn, table_name: str) -> bool:
-    command = command.lower().split()[0]
-    # I would do that using match-case, but I don't have installed newest version :(
-    if command == 'exit': return 0
-    elif command == 'show':        show_tables(conn)
-    elif command == 'describe':    show_table_info(conn, table_name)
-    elif command == 'help':        help()
-    else:               execute_sql_command(conn, command)
+def run_commands(command: str, conn, table_name: str):
+    try:
+        comm = command.lower().split()[0]
+    except IndexError:
+        print("Please provide a command")
+        return 1
+    
+
+    match comm:
+        case 'exit':        return 0
+        case 'help':        help()
+        case 'prev':        run_commands(globals()['prev'], conn, table_name)
+        case 'show':        show_tables(conn)
+        case 'describe':    show_table_info(conn, table_name)
+        case _:             execute_sql_command(conn, command)
+    globals()['prev'] = command
             
 
 def main(db_name: str) -> None:
     conn = connect_to_database(db_name)
-
+    globals()['prev'] = ""
     if conn:
         while True:
             command = input(colorama.Fore.GREEN + "Enter an SQL command: " + colorama.Fore.WHITE)
@@ -104,8 +112,7 @@ def start():
         print("Connecting to database")
         main(db_name)
     else:
-        print(f"No file with name '{db_name}'. Do you want to create y/n")
-        response = input()
+        response = input(f"No file with name '{db_name}'. Do you want to create new? y/n")
         if response.lower() == 'y':
             main(db_name)
         elif response.lower() == 'n':
